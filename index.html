@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SPLIT IT -J.T.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    @font-face {
+      font-family: "Kremlin";
+      src: url("fonts/Kremlin.woff") format("woff"),
+           url("fonts/Kremlin.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #111111;
+      --border-color: #000000;
+      --shadow-color: #000000;
+    }
+
+    body.dark {
+      --bg-color: #000000;
+      --text-color: #f5f5f5;
+      --border-color: #f5f5f5;
+      --shadow-color: #f5f5f5;
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='none' stroke='white' stroke-width='2'/>\
+</svg>") 8 8, auto;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Kremlin", sans-serif;
+      position: relative;
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='none' stroke='black' stroke-width='2'/>\
+</svg>") 8 8, auto;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 1000px; /* 5 × 200px */
+    }
+
+    .strip {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+      background: var(--bg-color);
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
+  <polygon points='10,2 18,10 10,18 2,10' fill='black' stroke='white' stroke-width='2'/>\
+</svg>") 10 10, auto;
+    }
+
+    body.dark .strip {
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
+  <polygon points='10,2 18,10 10,18 2,10' fill='white' stroke='black' stroke-width='2'/>\
+</svg>") 10 10, auto;
+    }
+
+    .strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .strip-inner {
+      display: inline-flex;
+      white-space: nowrap;
+    }
+
+    .slice {
+      flex: 0 0 200px;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .row-top .slice {
+      height: 40px;
+      align-items: flex-start;
+    }
+
+    .row-middle .slice {
+      height: 40px;
+      align-items: center;
+    }
+
+    .row-bottom .slice {
+      height: 40px;
+      align-items: flex-end;
+    }
+
+    .letter {
+      font-size: 140px;
+      line-height: 1;
+      color: var(--text-color);
+      font-weight: 600;
+      cursor: inherit;
+    }
+
+    /* optische fix voor de 8 (H + 0) */
+    .row-top .letter {
+      transform: translateY(2px);
+    }
+
+    .row-bottom .letter {
+      transform: translateY(-2px);
+    }
+
+    .strip,
+    .strip-inner,
+    .slice,
+    .letter {
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+
+    /* MOBIEL: exact 1 letter per scherm */
+    @media (max-width: 640px) {
+      .wrapper {
+        max-width: 100%;
+      }
+      .strip {
+        width: 100%;
+      }
+      .slice {
+        flex: 0 0 100%;  /* i.p.v. 100vw → precies zo breed als de strip */
+      }
+      .letter {
+        font-size: 130px;
+      }
+    }
+
+    .word-input {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      background: var(--bg-color);
+      border: 2px solid var(--border-color);
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      box-shadow: 6px 6px 0 var(--shadow-color);
+    }
+
+    .word-input,
+    .word-input input,
+    .word-input button,
+    .dark-toggle {
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='black' stroke='white' stroke-width='2'/>\
+</svg>") 8 8, auto;
+    }
+
+    body.dark .word-input,
+    body.dark .word-input input,
+    body.dark .word-input button,
+    body.dark .dark-toggle {
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='white' stroke='black' stroke-width='2'/>\
+</svg>") 8 8, auto;
+    }
+
+    .word-input input {
+      border: 2px solid var(--border-color);
+      padding: 6px 8px;
+      font-family: inherit;
+      font-size: 14px;
+      width: 150px;
+      outline: none;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .word-input input::placeholder {
+      color: var(--text-color);
+      opacity: 0.6;
+    }
+
+    .word-input button {
+      border: 2px solid var(--border-color);
+      background: var(--border-color);
+      color: var(--bg-color);
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .word-input button:hover {
+      opacity: 0.85;
+    }
+
+    .dark-toggle {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-color);
+      background: var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .dark-toggle:hover {
+      background: gray;
+      border-color: gray;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="strip row-top">
+      <div class="strip-inner" id="topRow"></div>
+    </div>
+    <div class="strip row-middle">
+      <div class="strip-inner" id="middleRow"></div>
+    </div>
+    <div class="strip row-bottom">
+      <div class="strip-inner" id="bottomRow"></div>
+    </div>
+  </div>
+
+  <div class="word-input">
+    <input type="text" id="wordInput" placeholder="TYPE A WORD" />
+    <button id="applyWord">SET</button>
+    <div class="dark-toggle" id="darkToggle"></div>
+  </div>
+
+  <script>
+    const topRow = document.getElementById("topRow");
+    const middleRow = document.getElementById("middleRow");
+    const bottomRow = document.getElementById("bottomRow");
+    const input = document.getElementById("wordInput");
+    const button = document.getElementById("applyWord");
+    const darkToggle = document.getElementById("darkToggle");
+    const strips = Array.from(document.querySelectorAll(".strip"));
+
+    const REPEATS = 20;
+    let currentWord = "HELL0";
+
+    const stripStates = strips.map(strip => ({
+      strip,
+      inner: strip.querySelector(".strip-inner"),
+      patternWidth: 0
+    }));
+
+    function buildRows(word) {
+      const letters = (word || "").toUpperCase().split("");
+      const safe = letters.length ? letters : ["A"];
+
+      topRow.innerHTML = "";
+      middleRow.innerHTML = "";
+      bottomRow.innerHTML = "";
+
+      for (let r = 0; r < REPEATS; r++) {
+        for (let i = 0; i < safe.length; i++) {
+          const char = safe[i];
+          const slice = document.createElement("div");
+          slice.className = "slice";
+          slice.innerHTML = "<div class='letter'>" + char + "</div>";
+          topRow.appendChild(slice);
+          middleRow.appendChild(slice.cloneNode(true));
+          bottomRow.appendChild(slice.cloneNode(true));
+        }
+      }
+
+      requestAnimationFrame(() => {
+        stripStates.forEach(state => {
+          const firstSlice = state.inner.querySelector(".slice");
+          if (!firstSlice) return;
+
+          const sliceWidth = firstSlice.offsetWidth;
+          const lettersPerPattern = safe.length;
+          const patternWidth = lettersPerPattern * sliceWidth;
+
+          state.patternWidth = patternWidth;
+
+          const middleRepeat = Math.floor(REPEATS / 2);
+          const startOfMiddlePattern = middleRepeat * patternWidth;
+
+          state.strip.scrollLeft = startOfMiddlePattern;
+        });
+      });
+    }
+
+    function setWordFromInput() {
+      const value = input.value.trim() || currentWord;
+      currentWord = value;
+      buildRows(currentWord);
+    }
+
+    function attachInfiniteScroll() {
+      stripStates.forEach(state => {
+        state.strip.addEventListener("scroll", () => {
+          const pw = state.patternWidth;
+          if (!pw) return;
+
+          const s = state.strip.scrollLeft;
+          const min = pw * 2;
+          const max = pw * (REPEATS - 2);
+
+          if (s < min) {
+            state.strip.scrollLeft = s + pw * (REPEATS - 4);
+          } else if (s > max) {
+            state.strip.scrollLeft = s - pw * (REPEATS - 4);
+          }
+        });
+      });
+    }
+
+    function attachDragAndSoftSnap() {
+      strips.forEach(strip => {
+        let isDown = false;
+        let startX = 0;
+        let startScrollLeft = 0;
+
+        let isAnimating = false;
+        let animationId = null;
+        let scrollTimeout = null;
+
+        function cancelAnimation() {
+          if (animationId !== null) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+          isAnimating = false;
+          if (scrollTimeout !== null) {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = null;
+          }
+        }
+
+        function animateToNearest() {
+          const slice = strip.querySelector(".slice");
+          if (!slice) return;
+          const sliceWidth = slice.offsetWidth || 1;
+
+          const current = strip.scrollLeft;
+          const index = Math.round(current / sliceWidth);
+          const target = index * sliceWidth;
+
+          const start = performance.now();
+          const duration = 350;
+          const from = current;
+          const distance = target - from;
+
+          if (Math.abs(distance) < 1) return;
+
+          isAnimating = true;
+
+          function easeInOutQuad(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+          }
+
+          function frame(now) {
+            const t = Math.min((now - start) / duration, 1);
+            const eased = easeInOutQuad(t);
+            strip.scrollLeft = from + distance * eased;
+
+            if (t < 1) {
+              animationId = requestAnimationFrame(frame);
+            } else {
+              animationId = null;
+              isAnimating = false;
+            }
+          }
+
+          animationId = requestAnimationFrame(frame);
+        }
+
+        function scheduleSnap() {
+          if (isAnimating) return;
+          if (scrollTimeout !== null) {
+            clearTimeout(scrollTimeout);
+          }
+          scrollTimeout = setTimeout(() => {
+            if (!isDown) {
+              animateToNearest();
+            }
+          }, 120);
+        }
+
+        strip.addEventListener("mousedown", (e) => {
+          if (e.button !== 0) return;
+          isDown = true;
+          startX = e.clientX;
+          startScrollLeft = strip.scrollLeft;
+          cancelAnimation();
+          e.preventDefault();
+        });
+
+        window.addEventListener("mousemove", (e) => {
+          if (!isDown) return;
+          const dx = e.clientX - startX;
+          strip.scrollLeft = startScrollLeft - dx;
+          e.preventDefault();
+        });
+
+        window.addEventListener("mouseup", () => {
+          if (!isDown) return;
+          isDown = false;
+          scheduleSnap();
+        });
+
+        strip.addEventListener("mouseleave", () => {
+          if (!isDown) return;
+          isDown = false;
+          scheduleSnap();
+        });
+
+        strip.addEventListener("scroll", () => {
+          if (isAnimating) return;
+          scheduleSnap();
+        });
+      });
+    }
+
+    darkToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+
+    input.addEventListener("input", () => {
+      input.value = input.value.toUpperCase().replace(/[^A-Z]/g, "");
+    });
+
+    button.addEventListener("click", setWordFromInput);
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") setWordFromInput();
+    });
+
+    buildRows(currentWord);
+    attachInfiniteScroll();
+    attachDragAndSoftSnap();
+  </script>
+</body>
+</html>
