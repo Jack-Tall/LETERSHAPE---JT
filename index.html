@@ -364,13 +364,13 @@
       }
 
       // EXACT je originele ratios
-      const sliceHeightOuter = Math.round(fontSize * 0.140);
+      const sliceHeightOuter = Math.round(fontSize * 0.120);
       const sliceHeightMiddle = Math.round(fontSize * 0.330);
 
       // offsets (zelfde als je originele), maar afgerond -> minder subpixel seams
       const topOffset = Math.round(fontSize * 0.045);
       const middleOffset = Math.round(fontSize * 0.018);
-      const bottomOffset = Math.round(-fontSize * 0.055);
+      const bottomOffset = Math.round(-fontSize * 0.085);
 
       // MOBILE FIX: overlap om witte seams te killen
       const overlap = (width <= 640) ? -1 : 0;
