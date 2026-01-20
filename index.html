@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>SPLIT IT -J.T.</title>
@@ -9,7 +10,7 @@
     @font-face {
       font-family: "Kremlin";
       src: url("fonts/Kremlin.woff") format("woff"),
-           url("fonts/Kremlin.ttf") format("truetype");
+        url("fonts/Kremlin.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -25,6 +26,13 @@
       --text-color: #111111;
       --border-color: #000000;
       --shadow-color: #000000;
+
+      /* Default Desktop Values */
+      --slice-height: 40px;
+      --letter-size: 140px;
+      --letter-offset: 2px;
+      --bottom-offset: 0px;
+      --slice-width: 200px;
     }
 
     body.dark {
@@ -97,46 +105,78 @@
       white-space: nowrap;
     }
 
+    /* --- Updated Slicing Logic for Perfect Alignment --- */
     .slice {
-      flex: 0 0 200px;
-      display: flex;
-      justify-content: center;
+      flex: 0 0 var(--slice-width);
+      /* Remove flex centering to rely on absolute positioning */
+      display: block;
+      position: relative;
       overflow: hidden;
     }
 
     .row-top .slice,
-    .row-middle .slice,
     .row-bottom .slice {
-      height: 40px;
-    }
-
-    .row-top .slice {
-      align-items: flex-start;
+      height: var(--slice-height-outer);
     }
 
     .row-middle .slice {
-      align-items: center;
+      height: var(--slice-height-middle);
     }
 
-    .row-bottom .slice {
-      align-items: flex-end;
+    /* Overlap rows to remove 'seam' pixels */
+    .row-middle,
+    .row-bottom {
+      margin-top: var(--row-overlap);
+      /* Negative margin */
     }
 
     .letter {
-      font-size: 140px;
+      font-size: var(--letter-size);
       line-height: 1;
+      /* Match font size */
       color: var(--text-color);
       font-weight: 600;
       cursor: inherit;
+
+      /* Absolute positioning for precise slicing */
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: var(--letter-size);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Center text within the letter box */
     }
 
+    /* 
+      Math:
+      We align the letter relative to the 'virtual' top of the 3-strip stack.
+      Top Row: Shifts letter to correct baseline offset.
+      Middle Row: Shifts letter up by 1 slice height.
+      Bottom Row: Shifts letter up by 2 slice heights.
+    */
+
     .row-top .letter {
-      transform: translateY(2px);
+      top: calc(var(--letter-baseline) + var(--top-offset));
+      transform: none;
+      /* Remove manual tweaks */
+      z-index: 1;
+    }
+
+    .row-middle .letter {
+      top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--row-overlap) + var(--middle-offset));
+      transform: none;
+      z-index: 2;
     }
 
     .row-bottom .letter {
-      transform: translateY(-2px);
+      top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--slice-height-middle) - (var(--row-overlap) * 2) + var(--bottom-offset));
+      transform: none;
+      z-index: 3;
     }
+
+
 
     .strip,
     .strip-inner,
@@ -151,21 +191,19 @@
       .wrapper {
         max-width: 90vw;
       }
-      .letter {
-        font-size: 120px;
-      }
+
+      /* Tablet adjustments if needed, 
+         but JS will likely handle the variables */
     }
 
     @media (max-width: 640px) {
       .wrapper {
         max-width: 100vw;
       }
-      .slice {
-        flex: 0 0 60vw;
-      }
-      .letter {
-        font-size: 130px;
-      }
+
+
+      /* Height and Font Size handled by JS variables 
+         to prevent fractional pixel issues */
     }
 
     .word-input {
@@ -273,8 +311,61 @@
     const darkToggle = document.getElementById("darkToggle");
     const strips = Array.from(document.querySelectorAll(".strip"));
 
+    // --- NEW: CSS Variable Management for Precise Pixels ---
+    function updateLayoutVariables() {
+      const width = window.innerWidth;
+      const root = document.documentElement;
+
+      let fontSize, sliceWidth;
+
+      if (width <= 640) {
+        // Mobile: Scale with viewport
+        fontSize = Math.round(width * 0.20);
+        sliceWidth = width / 3;
+      } else if (width <= 1024) {
+        // Tablet
+        fontSize = 120;
+        sliceWidth = 180;
+      } else {
+        // Desktop
+        fontSize = 140;
+        sliceWidth = 200;
+      }
+
+      // Outer reduced to 0.140, Middle increased to 0.330
+      const sliceHeightOuter = Math.round(fontSize * 0.140);
+      const sliceHeightMiddle = Math.round(fontSize * 0.330);
+      const topOffset = fontSize * 0.045;     // Shift letter down slightly more
+      const middleOffset = fontSize * 0.018;
+      const bottomOffset = -fontSize * 0.015; // Shift letter up slightly
+      const overlap = 0;
+
+      // Calculate the baseline alignment to perfectly center the letter 
+      // within the 3 stacked slices.
+      // totalHeight = H_outer + H_middle + H_outer
+      const totalHeight = sliceHeightOuter + sliceHeightMiddle + sliceHeightOuter;
+      const baseline = Math.round((totalHeight - fontSize) / 2);
+
+      root.style.setProperty('--letter-size', fontSize + 'px');
+      root.style.setProperty('--slice-width', sliceWidth + 'px');
+      root.style.setProperty('--slice-height-outer', sliceHeightOuter + 'px');
+      root.style.setProperty('--slice-height-middle', sliceHeightMiddle + 'px');
+      root.style.setProperty('--letter-baseline', baseline + 'px');
+      root.style.setProperty('--row-overlap', overlap + 'px');
+      root.style.setProperty('--top-offset', topOffset + 'px');
+      root.style.setProperty('--middle-offset', middleOffset + 'px');
+      root.style.setProperty('--bottom-offset', bottomOffset + 'px');
+    }
+
+    // Initial call
+    updateLayoutVariables();
+    // Update on resize
+    window.addEventListener('resize', updateLayoutVariables);
+    // -------------------------------------------------------
+
     const REPEATS = 20;
-    let currentWord = "HELL0";
+    // Default to "HEY" on mobile (3 letters visible), "HELL0" on desktop
+    let currentWord = window.innerWidth <= 640 ? "HEY" : "HELL0";
 
     const stripStates = strips.map(strip => ({
       strip,
@@ -304,12 +395,9 @@
 
       requestAnimationFrame(() => {
         stripStates.forEach(state => {
-          const firstSlice = state.inner.querySelector(".slice");
-          if (!firstSlice) return;
-
-          const sliceWidth = firstSlice.offsetWidth;
+          const sliceWidthVal = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slice-width'));
           const lettersPerPattern = safe.length;
-          const patternWidth = lettersPerPattern * sliceWidth;
+          const patternWidth = lettersPerPattern * sliceWidthVal;
 
           state.patternWidth = patternWidth;
 
@@ -369,13 +457,10 @@
         }
 
         function animateToNearest() {
-          const slice = strip.querySelector(".slice");
-          if (!slice) return;
-          const sliceWidth = slice.offsetWidth || 1;
-
+          const sliceWidthVal = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slice-width'));
           const current = strip.scrollLeft;
-          const index = Math.round(current / sliceWidth);
-          const target = index * sliceWidth;
+          const index = Math.round(current / sliceWidthVal);
+          const target = index * sliceWidthVal;
 
           const start = performance.now();
           const duration = 350;
@@ -471,4 +556,5 @@
     attachDragAndSoftSnap();
   </script>
 </body>
+
 </html>
