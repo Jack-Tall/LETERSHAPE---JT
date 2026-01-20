@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>SPLIT IT - J.T.</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPLIT IT -J.T.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
   <style>
     @font-face {
@@ -13,6 +13,7 @@
         url("fonts/Kremlin.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
+      font-display: swap;
     }
 
     * {
@@ -27,17 +28,18 @@
       --border-color: #000000;
       --shadow-color: #000000;
 
+      /* Default Desktop Values */
+      --slice-height: 40px;
+      --letter-size: 140px;
+      --letter-offset: 2px;
+      --bottom-offset: 0px;
       --slice-width: 200px;
+
+      /* these get set by JS */
       --slice-height-outer: 20px;
       --slice-height-middle: 46px;
-
-      --letter-size: 140px;
       --letter-baseline: 0px;
-
-      /* KEY FIX: kleine overlap om “seams/randen” op mobiel weg te werken */
-      --row-overlap: -1px;
-
-      /* offsets (altijd hele pixels gezet via JS) */
+      --row-overlap: 0px;
       --top-offset: 0px;
       --middle-offset: 0px;
       --bottom-offset: 0px;
@@ -48,9 +50,19 @@
       --text-color: #f5f5f5;
       --border-color: #f5f5f5;
       --shadow-color: #f5f5f5;
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='none' stroke='white' stroke-width='2'/>\
+</svg>") 8 8, auto;
     }
 
-    /* iOS/Android address-bar layout jump fix + geen page shift */
+    html,
+    body {
+      width: 100%;
+      overflow: hidden;
+      /* voorkomt “page schuift naar rechts” */
+    }
+
     body {
       background: var(--bg-color);
       color: var(--text-color);
@@ -59,9 +71,12 @@
       align-items: center;
       justify-content: center;
       font-family: "Kremlin", sans-serif;
-      overflow: hidden;
-      touch-action: pan-y;
-      /* page mag verticaal */
+      position: relative;
+
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='none' stroke='black' stroke-width='2'/>\
+</svg>") 8 8, auto;
     }
 
     @supports (min-height: 100svh) {
@@ -92,19 +107,26 @@
       background: var(--bg-color);
       -ms-overflow-style: none;
       scrollbar-width: none;
+
+      /* mobile drag smoother */
       touch-action: pan-x;
-      /* strip mag horizontaal */
       overscroll-behavior-x: none;
+
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
+  <polygon points='10,2 18,10 10,18 2,10' fill='black' stroke='white' stroke-width='2'/>\
+</svg>") 10 10, auto;
+    }
+
+    body.dark .strip {
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
+  <polygon points='10,2 18,10 10,18 2,10' fill='white' stroke='black' stroke-width='2'/>\
+</svg>") 10 10, auto;
     }
 
     .strip::-webkit-scrollbar {
       display: none;
-    }
-
-    /* overlap rows -> geen dunne lijntjes */
-    .row-middle,
-    .row-bottom {
-      margin-top: var(--row-overlap);
     }
 
     .strip-inner {
@@ -114,11 +136,11 @@
 
     .slice {
       flex: 0 0 var(--slice-width);
+      display: block;
       position: relative;
       overflow: hidden;
-      display: block;
       contain: layout paint;
-      /* minder “glitches” bij rebuild */
+      background: var(--bg-color);
     }
 
     .row-top .slice,
@@ -130,39 +152,48 @@
       height: var(--slice-height-middle);
     }
 
+    /* overlap rows: desktop 0, mobile -1 gezet via JS */
+    .row-middle,
+    .row-bottom {
+      margin-top: var(--row-overlap);
+    }
+
     .letter {
       font-size: var(--letter-size);
       line-height: 1;
       color: var(--text-color);
       font-weight: 600;
+      cursor: inherit;
 
       position: absolute;
       left: 0;
       width: 100%;
       height: var(--letter-size);
-
       display: flex;
       justify-content: center;
       align-items: center;
 
-      /* extra: minder “subpixel shimmer” */
       transform: translateZ(0);
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
     }
 
+    /* EXACT zoals jouw eerste upload (baseline/offset logic) */
     .row-top .letter {
       top: calc(var(--letter-baseline) + var(--top-offset));
+      transform: none;
       z-index: 1;
     }
 
     .row-middle .letter {
       top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--row-overlap) + var(--middle-offset));
+      transform: none;
       z-index: 2;
     }
 
     .row-bottom .letter {
       top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--slice-height-middle) - (var(--row-overlap) * 2) + var(--bottom-offset));
+      transform: none;
       z-index: 3;
     }
 
@@ -175,13 +206,13 @@
       -ms-user-select: none;
     }
 
-    @media (max-width:1024px) {
+    @media (max-width: 1024px) {
       .wrapper {
         max-width: 90vw;
       }
     }
 
-    @media (max-width:640px) {
+    @media (max-width: 640px) {
       .wrapper {
         max-width: 100vw;
       }
@@ -200,6 +231,26 @@
       font-size: 14px;
       box-shadow: 6px 6px 0 var(--shadow-color);
       z-index: 99;
+    }
+
+    .word-input,
+    .word-input input,
+    .word-input button,
+    .dark-toggle {
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='black' stroke='white' stroke-width='2'/>\
+</svg>") 8 8, auto;
+    }
+
+    body.dark .word-input,
+    body.dark .word-input input,
+    body.dark .word-input button,
+    body.dark .dark-toggle {
+      cursor: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+  <rect x='2' y='2' width='12' height='12' fill='white' stroke='black' stroke-width='2'/>\
+</svg>") 8 8, auto;
     }
 
     .word-input input {
@@ -276,156 +327,71 @@
     const REPEATS = 20;
     let currentWord = window.innerWidth <= 640 ? "HEY" : "HELL0";
 
-    // state
     let isRebuilding = false;
+
     const stripStates = strips.map(strip => ({
       strip,
-      patternWidth: 0,
-      // drag state
-      isDown: false,
-      startX: 0,
-      startScrollLeft: 0,
-      // snap animation
-      isAnimating: false,
-      animationId: null,
-      snapTimeout: null,
-      pointerId: null
+      patternWidth: 0
     }));
 
-    function pxInt(n) { return Math.round(n); }
+    function clampScrollLeft(strip, x) {
+      const max = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      return Math.min(Math.max(0, x), max);
+    }
 
+    // === Desktop EXACT zoals je eerste upload ===
+    // === Mobile: sliceWidth = stripWidth/3 + overlap -1 + integers ===
     function updateLayoutVariables() {
-      const root = document.documentElement;
       const width = window.innerWidth;
+      const root = document.documentElement;
 
-      let fontSize;
-      if (width <= 640) fontSize = pxInt(width * 0.20);
-      else if (width <= 1024) fontSize = 120;
-      else fontSize = 140;
+      let fontSize, sliceWidth;
 
-      // heights: integer pixels (important)
-      const sliceHeightOuter = pxInt(fontSize * 0.140);
-      const sliceHeightMiddle = pxInt(fontSize * 0.330);
-
-      // offsets: ALSO integer pixels (important)
-      const topOffset = pxInt(fontSize * 0.045);
-      const middleOffset = pxInt(fontSize * 0.018);
-      const bottomOffset = pxInt(-fontSize * 0.015);
-
-      // overlap: -1px kills seams on mobile
-      const overlap = -1;
-
-      // baseline: integer
-      const totalHeight = sliceHeightOuter + sliceHeightMiddle + sliceHeightOuter;
-      const baseline = pxInt((totalHeight - fontSize) / 2);
-
-      root.style.setProperty("--letter-size", fontSize + "px");
-      root.style.setProperty("--slice-height-outer", sliceHeightOuter + "px");
-      root.style.setProperty("--slice-height-middle", sliceHeightMiddle + "px");
-      root.style.setProperty("--letter-baseline", baseline + "px");
-      root.style.setProperty("--row-overlap", overlap + "px");
-      root.style.setProperty("--top-offset", topOffset + "px");
-      root.style.setProperty("--middle-offset", middleOffset + "px");
-      root.style.setProperty("--bottom-offset", bottomOffset + "px");
-
-      // KEY FIX: op mobiel EXACT 3 letters zichtbaar door slice-width = stripWidth/3 (echte breedte)
-      // op desktop/tablet vaste waarden
       if (width <= 640) {
-        // neem breedte van wrapper/strip (niet innerWidth!)
-        const stripWidth = strips[0].clientWidth || width;
-        const sliceWidth = Math.floor(stripWidth / 3);
-        root.style.setProperty("--slice-width", sliceWidth + "px");
+        // MOBILE FIX: baseer op echte stripbreedte, niet innerWidth
+        fontSize = Math.round(width * 0.20);
+
+        const stripW = strips[0].clientWidth || width;
+        sliceWidth = Math.floor(stripW / 3);
       } else if (width <= 1024) {
-        root.style.setProperty("--slice-width", "180px");
+        // Tablet (zoals je eerste)
+        fontSize = 120;
+        sliceWidth = 180;
       } else {
-        root.style.setProperty("--slice-width", "200px");
+        // Desktop (zoals je eerste)
+        fontSize = 140;
+        sliceWidth = 200;
       }
+
+      // EXACT je originele ratios
+      const sliceHeightOuter = Math.round(fontSize * 0.140);
+      const sliceHeightMiddle = Math.round(fontSize * 0.330);
+
+      // offsets (zelfde als je originele), maar afgerond -> minder subpixel seams
+      const topOffset = Math.round(fontSize * 0.045);
+      const middleOffset = Math.round(fontSize * 0.018);
+      const bottomOffset = Math.round(-fontSize * 0.055);
+
+      // MOBILE FIX: overlap om witte seams te killen
+      const overlap = (width <= 640) ? -1 : 0;
+
+      // EXACT je originele baseline berekening
+      const totalHeight = sliceHeightOuter + sliceHeightMiddle + sliceHeightOuter;
+      const baseline = Math.round((totalHeight - fontSize) / 2);
+
+      root.style.setProperty('--letter-size', fontSize + 'px');
+      root.style.setProperty('--slice-width', sliceWidth + 'px');
+      root.style.setProperty('--slice-height-outer', sliceHeightOuter + 'px');
+      root.style.setProperty('--slice-height-middle', sliceHeightMiddle + 'px');
+      root.style.setProperty('--letter-baseline', baseline + 'px');
+      root.style.setProperty('--row-overlap', overlap + 'px');
+      root.style.setProperty('--top-offset', topOffset + 'px');
+      root.style.setProperty('--middle-offset', middleOffset + 'px');
+      root.style.setProperty('--bottom-offset', bottomOffset + 'px');
     }
 
     function getSliceWidth() {
-      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--slice-width")) || 200;
-    }
-
-    function cancelSnap(state) {
-      if (state.animationId !== null) {
-        cancelAnimationFrame(state.animationId);
-        state.animationId = null;
-      }
-      state.isAnimating = false;
-      if (state.snapTimeout !== null) {
-        clearTimeout(state.snapTimeout);
-        state.snapTimeout = null;
-      }
-    }
-
-    function animateToNearest(state) {
-      if (isRebuilding) return;
-      const strip = state.strip;
-      const sliceW = getSliceWidth();
-      const current = strip.scrollLeft;
-
-      const index = Math.round(current / sliceW);
-      const target = index * sliceW;
-
-      const dist = target - current;
-      if (Math.abs(dist) < 0.5) return;
-
-      cancelSnap(state);
-      state.isAnimating = true;
-
-      const start = performance.now();
-      const duration = 260;
-      const from = current;
-
-      function easeInOutQuad(t) {
-        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      }
-
-      function frame(now) {
-        if (isRebuilding) { cancelSnap(state); return; }
-        const t = Math.min((now - start) / duration, 1);
-        const eased = easeInOutQuad(t);
-        strip.scrollLeft = from + (target - from) * eased;
-
-        if (t < 1) {
-          state.animationId = requestAnimationFrame(frame);
-        } else {
-          state.animationId = null;
-          state.isAnimating = false;
-        }
-      }
-      state.animationId = requestAnimationFrame(frame);
-    }
-
-    function scheduleSnap(state) {
-      if (isRebuilding) return;
-      if (state.isAnimating) return;
-      if (state.snapTimeout !== null) clearTimeout(state.snapTimeout);
-      state.snapTimeout = setTimeout(() => {
-        if (!state.isDown) animateToNearest(state);
-      }, 120);
-    }
-
-    function updatePatternWidths(word) {
-      const sliceW = getSliceWidth();
-      const lettersPerPattern = Math.max(1, word.length);
-      const patternW = lettersPerPattern * sliceW;
-
-      stripStates.forEach(st => st.patternWidth = patternW);
-    }
-
-    function jumpToMiddle() {
-      // zet alle strips naar “midden patroon” om infinite scroll stabiel te maken
-      const sliceW = getSliceWidth();
-      const lettersPerPattern = Math.max(1, currentWord.length);
-      const patternW = lettersPerPattern * sliceW;
-
-      const middleRepeat = Math.floor(REPEATS / 2);
-      const startOfMiddlePattern = middleRepeat * patternW;
-
-      stripStates.forEach(st => {
-        st.strip.scrollLeft = startOfMiddlePattern;
-      });
+      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slice-width')) || 200;
     }
 
     function buildRows(word) {
@@ -436,53 +402,50 @@
       middleRow.innerHTML = "";
       bottomRow.innerHTML = "";
 
-      // Bouw eerst een DocumentFragment (minder layout thrash/glitch)
-      const fragTop = document.createDocumentFragment();
-      const fragMid = document.createDocumentFragment();
-      const fragBot = document.createDocumentFragment();
-
       for (let r = 0; r < REPEATS; r++) {
         for (let i = 0; i < safe.length; i++) {
           const char = safe[i];
-
           const slice = document.createElement("div");
           slice.className = "slice";
           slice.innerHTML = "<div class='letter'>" + char + "</div>";
-
-          fragTop.appendChild(slice);
-          fragMid.appendChild(slice.cloneNode(true));
-          fragBot.appendChild(slice.cloneNode(true));
+          topRow.appendChild(slice);
+          middleRow.appendChild(slice.cloneNode(true));
+          bottomRow.appendChild(slice.cloneNode(true));
         }
       }
 
-      topRow.appendChild(fragTop);
-      middleRow.appendChild(fragMid);
-      bottomRow.appendChild(fragBot);
-
-      updatePatternWidths(safe.join(""));
-
-      // Wacht 2 frames voor layout/styling klaar is -> voorkomt “glitch”
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          jumpToMiddle();
+        stripStates.forEach(state => {
+          const sliceWidthVal = getSliceWidth();
+          const lettersPerPattern = safe.length;
+          const patternWidth = lettersPerPattern * sliceWidthVal;
+
+          state.patternWidth = patternWidth;
+
+          const middleRepeat = Math.floor(REPEATS / 2);
+          const startOfMiddlePattern = middleRepeat * patternWidth;
+
+          state.strip.scrollLeft = clampScrollLeft(state.strip, startOfMiddlePattern);
         });
       });
     }
 
-    function safeRebuild(newWord) {
+    function setWordFromInput() {
+      // MOBILE FIX: keyboard + focus veroorzaakt layout-jumps -> blur eerst
+      input.blur();
+
+      const value = input.value.trim() || currentWord;
+      currentWord = value.toUpperCase();
+      rebuild();
+    }
+
+    function rebuild() {
       isRebuilding = true;
 
-      // stop alle animaties/timers
-      stripStates.forEach(st => cancelSnap(st));
-
-      // layout vars eerst (sliceWidth kan veranderen op mobiel)
       updateLayoutVariables();
-
-      // rebuild
-      currentWord = newWord;
       buildRows(currentWord);
 
-      // rebuild done (na layout)
+      // unlock na layout
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           isRebuilding = false;
@@ -490,115 +453,167 @@
       });
     }
 
-    function setWordFromInput() {
-      const raw = input.value.trim();
-      const value = (raw || currentWord).toUpperCase();
-      safeRebuild(value);
-    }
-
-    // infinite scroll (stabieler met guard)
     function attachInfiniteScroll() {
-      stripStates.forEach(st => {
-        st.strip.addEventListener("scroll", () => {
+      stripStates.forEach(state => {
+        state.strip.addEventListener("scroll", () => {
           if (isRebuilding) return;
 
-          const pw = st.patternWidth;
+          const pw = state.patternWidth;
           if (!pw) return;
 
-          const s = st.strip.scrollLeft;
+          const s = state.strip.scrollLeft;
           const min = pw * 2;
           const max = pw * (REPEATS - 2);
 
           if (s < min) {
-            st.strip.scrollLeft = s + pw * (REPEATS - 4);
+            state.strip.scrollLeft = clampScrollLeft(state.strip, s + pw * (REPEATS - 4));
           } else if (s > max) {
-            st.strip.scrollLeft = s - pw * (REPEATS - 4);
+            state.strip.scrollLeft = clampScrollLeft(state.strip, s - pw * (REPEATS - 4));
           }
-
-          if (!st.isDown && !st.isAnimating) scheduleSnap(st);
         }, { passive: true });
       });
     }
 
-    // drag + snap via Pointer Events (touch + mouse)
-    function attachDragAndSnap() {
-      stripStates.forEach(st => {
-        const strip = st.strip;
+    function attachDragAndSoftSnap() {
+      strips.forEach(strip => {
+        let isDown = false;
+        let startX = 0;
+        let startScrollLeft = 0;
+
+        let isAnimating = false;
+        let animationId = null;
+        let scrollTimeout = null;
+
+        function cancelAnimation() {
+          if (animationId !== null) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+          isAnimating = false;
+          if (scrollTimeout !== null) {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = null;
+          }
+        }
+
+        function animateToNearest() {
+          if (isRebuilding) return;
+
+          const sliceWidthVal = getSliceWidth();
+          const current = strip.scrollLeft;
+          const index = Math.round(current / sliceWidthVal);
+          const target = index * sliceWidthVal;
+
+          const start = performance.now();
+          const duration = 350;
+          const from = current;
+          const distance = target - from;
+
+          if (Math.abs(distance) < 1) return;
+
+          isAnimating = true;
+
+          function easeInOutQuad(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+          }
+
+          function frame(now) {
+            if (isRebuilding) { cancelAnimation(); return; }
+            const t = Math.min((now - start) / duration, 1);
+            const eased = easeInOutQuad(t);
+            strip.scrollLeft = from + distance * eased;
+
+            if (t < 1) {
+              animationId = requestAnimationFrame(frame);
+            } else {
+              animationId = null;
+              isAnimating = false;
+            }
+          }
+
+          animationId = requestAnimationFrame(frame);
+        }
+
+        function scheduleSnap() {
+          if (isAnimating || isRebuilding) return;
+          if (scrollTimeout !== null) {
+            clearTimeout(scrollTimeout);
+          }
+          scrollTimeout = setTimeout(() => {
+            if (!isDown) animateToNearest();
+          }, 120);
+        }
 
         strip.addEventListener("pointerdown", (e) => {
           if (isRebuilding) return;
-          // alleen primary pointer
-          st.isDown = true;
-          st.pointerId = e.pointerId;
+          isDown = true;
+          startX = e.clientX;
+          startScrollLeft = strip.scrollLeft;
+          cancelAnimation();
           strip.setPointerCapture(e.pointerId);
-
-          st.startX = e.clientX;
-          st.startScrollLeft = strip.scrollLeft;
-
-          cancelSnap(st);
           e.preventDefault();
         });
 
         strip.addEventListener("pointermove", (e) => {
-          if (!st.isDown) return;
-          if (isRebuilding) return;
-          if (st.pointerId !== e.pointerId) return;
-
-          const dx = e.clientX - st.startX;
-          strip.scrollLeft = st.startScrollLeft - dx;
+          if (!isDown) return;
+          const dx = e.clientX - startX;
+          strip.scrollLeft = startScrollLeft - dx;
           e.preventDefault();
         });
 
-        function endDrag(e) {
-          if (!st.isDown) return;
-          if (st.pointerId !== null && e && st.pointerId !== e.pointerId) return;
-
-          st.isDown = false;
-          st.pointerId = null;
-          scheduleSnap(st);
-        }
-
-        strip.addEventListener("pointerup", endDrag);
-        strip.addEventListener("pointercancel", endDrag);
-        strip.addEventListener("lostpointercapture", () => {
-          if (!st.isDown) return;
-          st.isDown = false;
-          st.pointerId = null;
-          scheduleSnap(st);
+        strip.addEventListener("pointerup", () => {
+          if (!isDown) return;
+          isDown = false;
+          scheduleSnap();
         });
+
+        strip.addEventListener("pointercancel", () => {
+          if (!isDown) return;
+          isDown = false;
+          scheduleSnap();
+        });
+
+        strip.addEventListener("scroll", () => {
+          if (isAnimating || isRebuilding) return;
+          scheduleSnap();
+        }, { passive: true });
       });
     }
 
-    // theme
     darkToggle.addEventListener("click", () => {
       document.body.classList.toggle("dark");
     });
 
-    // input filter (A-Z + 0-9)
     input.addEventListener("input", () => {
       input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     });
 
     button.addEventListener("click", setWordFromInput);
-    input.addEventListener("keydown", (e) => {
+    input.addEventListener("keydown", e => {
       if (e.key === "Enter") setWordFromInput();
     });
 
-    // resize: opnieuw variables + rebuild (stabiel, zonder glitch)
+    // Debounced resize -> voorkomt Safari UI jumps
     let resizeT = null;
-    window.addEventListener("resize", () => {
-      if (resizeT) clearTimeout(resizeT);
-      resizeT = setTimeout(() => {
-        // keep word, rebuild to enforce exact 3 letters on mobile + no seams
-        safeRebuild(currentWord);
-      }, 120);
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(() => rebuild(), 120);
     }, { passive: true });
 
-    // INIT
-    updateLayoutVariables();
-    buildRows(currentWord);
-    attachInfiniteScroll();
-    attachDragAndSnap();
+    async function init() {
+      updateLayoutVariables();
+
+      // MOBILE FIX: wacht tot font geladen is, anders font-swap glitch
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) { }
+      }
+
+      buildRows(currentWord);
+      attachInfiniteScroll();
+      attachDragAndSoftSnap();
+    }
+
+    init();
   </script>
 </body>
 
