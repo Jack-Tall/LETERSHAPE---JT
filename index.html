@@ -7,6 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
   <style>
+    /* =========================
+         FONT
+      ========================== */
     @font-face {
       font-family: "Kremlin";
       src: url("fonts/Kremlin.woff") format("woff"),
@@ -16,67 +19,28 @@
       font-display: swap;
     }
 
+    /* =========================
+         RESET + BASE
+      ========================== */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    :root {
-      --bg-color: #ffffff;
-      --text-color: #111111;
-      --border-color: #000000;
-      --shadow-color: #000000;
-
-      /* Default Desktop Values */
-      --slice-height: 40px;
-      --letter-size: 140px;
-      --letter-offset: 2px;
-      --bottom-offset: 0px;
-      --slice-width: 200px;
-
-      /* these get set by JS */
-      --slice-height-outer: 20px;
-      --slice-height-middle: 46px;
-      --letter-baseline: 0px;
-      --row-overlap: 0px;
-      --top-offset: 0px;
-      --middle-offset: 0px;
-      --bottom-offset: 0px;
-    }
-
-    body.dark {
-      --bg-color: #000000;
-      --text-color: #f5f5f5;
-      --border-color: #f5f5f5;
-      --shadow-color: #f5f5f5;
-      cursor: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
-  <rect x='2' y='2' width='12' height='12' fill='none' stroke='white' stroke-width='2'/>\
-</svg>") 8 8, auto;
-    }
-
     html,
     body {
       width: 100%;
       overflow: hidden;
-      /* voorkomt “page schuift naar rechts” */
     }
 
     body {
-      background: var(--bg-color);
-      color: var(--text-color);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: "Kremlin", sans-serif;
       position: relative;
-
-      cursor: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
-  <rect x='2' y='2' width='12' height='12' fill='none' stroke='black' stroke-width='2'/>\
-</svg>") 8 8, auto;
     }
 
     @supports (min-height: 100svh) {
@@ -85,44 +49,120 @@
       }
     }
 
+    /* =========================
+         THEME TOKENS (JS UPDATES SOME)
+      ========================== */
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #111111;
+      --border-color: #000000;
+      --shadow-color: #000000;
+
+      --strip-width: 100%;
+      --slice-width: 116px;
+
+      --slice-height-outer: 20px;
+      --slice-height-middle: 46px;
+
+      --letter-size: 82px;
+      --letter-baseline: 0px;
+
+      --row-overlap: 0px;
+      --top-offset: 0px;
+      --middle-offset: 0px;
+      --bottom-offset: 0px;
+
+      --cursor-default: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+<rect x='2' y='2' width='12' height='12' fill='none' stroke='black' stroke-width='2'/>\
+</svg>") 8 8, auto;
+
+      --cursor-default-dark: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+<rect x='2' y='2' width='12' height='12' fill='none' stroke='white' stroke-width='2'/>\
+</svg>") 8 8, auto;
+
+      --cursor-drag: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
+<polygon points='10,2 18,10 10,18 2,10' fill='black' stroke='white' stroke-width='2'/>\
+</svg>") 10 10, auto;
+
+      --cursor-drag-dark: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
+<polygon points='10,2 18,10 10,18 2,10' fill='white' stroke='black' stroke-width='2'/>\
+</svg>") 10 10, auto;
+
+      --cursor-ui: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+<rect x='2' y='2' width='12' height='12' fill='black' stroke='white' stroke-width='2'/>\
+</svg>") 8 8, auto;
+
+      --cursor-ui-dark: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
+<rect x='2' y='2' width='12' height='12' fill='white' stroke='black' stroke-width='2'/>\
+</svg>") 8 8, auto;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      cursor: var(--cursor-default);
+    }
+
+    body.dark {
+      --bg-color: #000000;
+      --text-color: #f5f5f5;
+      --border-color: #f5f5f5;
+      --shadow-color: #f5f5f5;
+      cursor: var(--cursor-default-dark);
+    }
+
+    /* =========================
+         STAGE (CENTERED WRAPPER)
+      ========================== */
     .wrapper {
       width: 100%;
-      max-width: 1000px;
+      max-width: 2000px;
+      padding: 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .row-top,
-    .row-middle,
-    .row-bottom {
-      display: block;
-      margin: 0;
-      padding: 0;
+    @media (max-width: 1024px) {
+      .wrapper {
+        max-width: 90vw;
+      }
     }
 
+    @media (max-width: 640px) {
+      .wrapper {
+        max-width: 100vw;
+        padding: 0 15px;
+      }
+    }
+
+    /* =========================
+         STRIPS (SCROLLABLE ROWS)
+      ========================== */
     .strip {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      margin: 0;
-      padding: 0;
+      width: var(--strip-width, 100%);
       line-height: 0;
       background: var(--bg-color);
       -ms-overflow-style: none;
       scrollbar-width: none;
 
-      /* mobile drag smoother */
       touch-action: pan-x;
       overscroll-behavior-x: none;
 
-      cursor: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
-  <polygon points='10,2 18,10 10,18 2,10' fill='black' stroke='white' stroke-width='2'/>\
-</svg>") 10 10, auto;
+      cursor: var(--cursor-drag);
     }
 
     body.dark .strip {
-      cursor: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>\
-  <polygon points='10,2 18,10 10,18 2,10' fill='white' stroke='black' stroke-width='2'/>\
-</svg>") 10 10, auto;
+      cursor: var(--cursor-drag-dark);
     }
 
     .strip::-webkit-scrollbar {
@@ -134,6 +174,14 @@
       white-space: nowrap;
     }
 
+    .row-middle,
+    .row-bottom {
+      margin-top: var(--row-overlap);
+    }
+
+    /* =========================
+         SLICES + LETTER LAYERS
+      ========================== */
     .slice {
       flex: 0 0 var(--slice-width);
       display: block;
@@ -152,18 +200,11 @@
       height: var(--slice-height-middle);
     }
 
-    /* overlap rows: desktop 0, mobile -1 gezet via JS */
-    .row-middle,
-    .row-bottom {
-      margin-top: var(--row-overlap);
-    }
-
     .letter {
       font-size: var(--letter-size);
       line-height: 1;
       color: var(--text-color);
       font-weight: 600;
-      cursor: inherit;
 
       position: absolute;
       left: 0;
@@ -176,48 +217,30 @@
       transform: translateZ(0);
       -webkit-font-smoothing: antialiased;
       text-rendering: geometricPrecision;
-    }
 
-    /* EXACT zoals jouw eerste upload (baseline/offset logic) */
-    .row-top .letter {
-      top: calc(var(--letter-baseline) + var(--top-offset));
-      transform: none;
-      z-index: 1;
-    }
-
-    .row-middle .letter {
-      top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--row-overlap) + var(--middle-offset));
-      transform: none;
-      z-index: 2;
-    }
-
-    .row-bottom .letter {
-      top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--slice-height-middle) - (var(--row-overlap) * 2) + var(--bottom-offset));
-      transform: none;
-      z-index: 3;
-    }
-
-    .strip,
-    .strip-inner,
-    .slice,
-    .letter {
       user-select: none;
       -webkit-user-select: none;
       -ms-user-select: none;
     }
 
-    @media (max-width: 1024px) {
-      .wrapper {
-        max-width: 90vw;
-      }
+    .row-top .letter {
+      top: calc(var(--letter-baseline) + var(--top-offset));
+      z-index: 1;
     }
 
-    @media (max-width: 640px) {
-      .wrapper {
-        max-width: 100vw;
-      }
+    .row-middle .letter {
+      top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--row-overlap) + var(--middle-offset));
+      z-index: 2;
     }
 
+    .row-bottom .letter {
+      top: calc(var(--letter-baseline) - var(--slice-height-outer) - var(--slice-height-middle) - (var(--row-overlap) * 2) + var(--bottom-offset));
+      z-index: 3;
+    }
+
+    /* =========================
+         UI PANEL (INPUT + TOGGLES)
+      ========================== */
     .word-input {
       position: fixed;
       left: 20px;
@@ -231,26 +254,19 @@
       font-size: 14px;
       box-shadow: 6px 6px 0 var(--shadow-color);
       z-index: 99;
+
+      cursor: var(--cursor-ui);
     }
 
-    .word-input,
+    body.dark .word-input {
+      cursor: var(--cursor-ui-dark);
+    }
+
     .word-input input,
     .word-input button,
-    .dark-toggle {
-      cursor: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
-  <rect x='2' y='2' width='12' height='12' fill='black' stroke='white' stroke-width='2'/>\
-</svg>") 8 8, auto;
-    }
-
-    body.dark .word-input,
-    body.dark .word-input input,
-    body.dark .word-input button,
-    body.dark .dark-toggle {
-      cursor: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>\
-  <rect x='2' y='2' width='12' height='12' fill='white' stroke='black' stroke-width='2'/>\
-</svg>") 8 8, auto;
+    .dark-toggle,
+    .fullscreen-toggle {
+      cursor: inherit;
     }
 
     .word-input input {
@@ -293,6 +309,68 @@
       background: gray;
       border-color: gray;
     }
+
+    .fullscreen-toggle {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-color);
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.dark .fullscreen-toggle {
+      background: var(--bg-color);
+    }
+
+    .fullscreen-toggle:hover {
+      opacity: 0.7;
+    }
+
+    .fs-icon {
+      width: 10px;
+      height: 10px;
+      border: 2px solid var(--border-color);
+    }
+
+    .exit-fs-icon {
+      width: 6px;
+      height: 6px;
+      background: var(--border-color);
+    }
+
+    .exit-fs-icon::before {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* =========================
+         FEEDBACK (INVALID INPUT)
+      ========================== */
+    @keyframes flash {
+
+      0%,
+      100% {
+        background: var(--border-color);
+        color: var(--bg-color);
+      }
+
+      50% {
+        background: var(--bg-color);
+        color: var(--border-color);
+      }
+    }
+
+    .button-error {
+      animation: flash 0.3s infinite;
+      opacity: 1 !important;
+    }
   </style>
 </head>
 
@@ -310,104 +388,127 @@
   </div>
 
   <div class="word-input">
-    <input type="text" id="wordInput" placeholder="TYPE A WORD" />
+    <div class="fullscreen-toggle" id="fsToggle" title="FULLSCREEN">
+      <div class="fs-icon" id="fsIcon"></div>
+    </div>
+    <input type="text" id="wordInput" placeholder="TYPE HERE..." />
     <button id="applyWord">SET</button>
-    <div class="dark-toggle" id="darkToggle"></div>
+    <div class="dark-toggle" id="darkToggle" title="DARK MODE"></div>
   </div>
 
   <script>
+    /* =========================
+       DOM REFERENCES
+    ========================== */
     const topRow = document.getElementById("topRow");
     const middleRow = document.getElementById("middleRow");
     const bottomRow = document.getElementById("bottomRow");
     const input = document.getElementById("wordInput");
     const button = document.getElementById("applyWord");
     const darkToggle = document.getElementById("darkToggle");
+    const fsToggle = document.getElementById("fsToggle");
+    const fsIcon = document.getElementById("fsIcon");
     const strips = Array.from(document.querySelectorAll(".strip"));
 
+    /* =========================
+       CONFIG
+    ========================== */
     const REPEATS = 20;
-    let currentWord = window.innerWidth <= 640 ? "HEY" : "HELL0";
+    const FONT_SIZE = 82;
+    const SLICE_WIDTH = Math.round(FONT_SIZE * 1.42);
 
+    /* =========================
+       STATE
+    ========================== */
+    let fullWord = window.innerWidth <= 640 ? "HEY" : "HELLO";
+    let currentWord = fullWord;
+    let hasInteracted = false;
     let isRebuilding = false;
 
-    const stripStates = strips.map(strip => ({
-      strip,
-      patternWidth: 0
-    }));
+    const stripStates = strips.map((strip) => ({ strip, patternWidth: 0 }));
 
+    /* =========================
+       HELPERS
+    ========================== */
     function clampScrollLeft(strip, x) {
       const max = Math.max(0, strip.scrollWidth - strip.clientWidth);
       return Math.min(Math.max(0, x), max);
     }
 
-    // === Desktop EXACT zoals je eerste upload ===
-    // === Mobile: sliceWidth = stripWidth/3 + overlap -1 + integers ===
+    function getSliceWidth() {
+      return (
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue("--slice-width")
+        ) || SLICE_WIDTH
+      );
+    }
+
+    function getMaxLetters() {
+      const width = window.innerWidth;
+      const horizontalPadding = width <= 640 ? 30 : 80;
+      const availableWidth = width - horizontalPadding;
+      const calculatedMax = Math.floor(availableWidth / SLICE_WIDTH);
+      return Math.min(12, Math.max(3, calculatedMax));
+    }
+
+    /* =========================
+       LAYOUT (CSS VARIABLES)
+    ========================== */
     function updateLayoutVariables() {
       const width = window.innerWidth;
       const root = document.documentElement;
 
-      let fontSize, sliceWidth;
+      const maxSlots = getMaxLetters();
+      currentWord = fullWord.substring(0, maxSlots);
 
-      if (width <= 640) {
-        // MOBILE FIX: baseer op echte stripbreedte, niet innerWidth
-        fontSize = Math.round(width * 0.20);
+      if (hasInteracted) input.value = currentWord;
 
-        const stripW = strips[0].clientWidth || width;
-        sliceWidth = Math.floor(stripW / 3);
-      } else if (width <= 1024) {
-        // Tablet (zoals je eerste)
-        fontSize = 120;
-        sliceWidth = 180;
-      } else {
-        // Desktop (zoals je eerste)
-        fontSize = 140;
-        sliceWidth = 200;
-      }
+      const stripWidth = SLICE_WIDTH * currentWord.length;
 
-      // EXACT je originele ratios
-      const sliceHeightOuter = Math.round(fontSize * 0.120);
-      const sliceHeightMiddle = Math.round(fontSize * 0.330);
+      const sliceHeightOuter = Math.round(FONT_SIZE * 0.12);
+      const sliceHeightMiddle = Math.round(FONT_SIZE * 0.33);
 
-      // offsets (zelfde als je originele), maar afgerond -> minder subpixel seams
-      const topOffset = Math.round(fontSize * 0.045);
-      const middleOffset = Math.round(fontSize * 0.018);
-      const bottomOffset = Math.round(-fontSize * 0.085);
+      const topOffset = Math.round(FONT_SIZE * 0.045);
+      const middleOffset = Math.round(FONT_SIZE * 0.018);
+      const bottomOffset = Math.round(-FONT_SIZE * 0.085);
 
-      // MOBILE FIX: overlap om witte seams te killen
-      const overlap = (width <= 640) ? -1 : 0;
+      const overlap = width <= 640 ? -1 : 0;
 
-      // EXACT je originele baseline berekening
       const totalHeight = sliceHeightOuter + sliceHeightMiddle + sliceHeightOuter;
-      const baseline = Math.round((totalHeight - fontSize) / 2);
+      const baseline = Math.round((totalHeight - FONT_SIZE) / 2);
 
-      root.style.setProperty('--letter-size', fontSize + 'px');
-      root.style.setProperty('--slice-width', sliceWidth + 'px');
-      root.style.setProperty('--slice-height-outer', sliceHeightOuter + 'px');
-      root.style.setProperty('--slice-height-middle', sliceHeightMiddle + 'px');
-      root.style.setProperty('--letter-baseline', baseline + 'px');
-      root.style.setProperty('--row-overlap', overlap + 'px');
-      root.style.setProperty('--top-offset', topOffset + 'px');
-      root.style.setProperty('--middle-offset', middleOffset + 'px');
-      root.style.setProperty('--bottom-offset', bottomOffset + 'px');
+      root.style.setProperty("--letter-size", FONT_SIZE + "px");
+      root.style.setProperty("--slice-width", SLICE_WIDTH + "px");
+      root.style.setProperty("--slice-height-outer", sliceHeightOuter + "px");
+      root.style.setProperty("--slice-height-middle", sliceHeightMiddle + "px");
+      root.style.setProperty("--letter-baseline", baseline + "px");
+      root.style.setProperty("--row-overlap", overlap + "px");
+      root.style.setProperty("--top-offset", topOffset + "px");
+      root.style.setProperty("--middle-offset", middleOffset + "px");
+      root.style.setProperty("--bottom-offset", bottomOffset + "px");
+      root.style.setProperty("--strip-width", stripWidth + "px");
     }
 
-    function getSliceWidth() {
-      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slice-width')) || 200;
-    }
-
-    function buildRows(word) {
-      const letters = (word || "").toUpperCase().split("");
-      const safe = letters.length ? letters : ["A"];
+    /* =========================
+       RENDER (BUILD SLICES)
+    ========================== */
+    function buildRows(word, savedIndices = null) {
+      const safe = (word || "").toUpperCase().split("");
+      const letters = safe.length ? safe : ["A"];
 
       topRow.innerHTML = "";
       middleRow.innerHTML = "";
       bottomRow.innerHTML = "";
 
       for (let r = 0; r < REPEATS; r++) {
-        for (let i = 0; i < safe.length; i++) {
-          const char = safe[i];
+        for (let i = 0; i < letters.length; i++) {
+          const char = letters[i];
+          const displayChar = char === " " ? "&nbsp;" : char;
+
           const slice = document.createElement("div");
           slice.className = "slice";
-          slice.innerHTML = "<div class='letter'>" + char + "</div>";
+          slice.innerHTML = `<div class="letter">${displayChar}</div>`;
+
           topRow.appendChild(slice);
           middleRow.appendChild(slice.cloneNode(true));
           bottomRow.appendChild(slice.cloneNode(true));
@@ -415,67 +516,103 @@
       }
 
       requestAnimationFrame(() => {
-        stripStates.forEach(state => {
-          const sliceWidthVal = getSliceWidth();
-          const lettersPerPattern = safe.length;
-          const patternWidth = lettersPerPattern * sliceWidthVal;
+        const sliceWidthVal = getSliceWidth();
+        const lettersPerPattern = letters.length;
+        const patternWidth = lettersPerPattern * sliceWidthVal;
 
+        stripStates.forEach((state, idx) => {
           state.patternWidth = patternWidth;
 
-          const middleRepeat = Math.floor(REPEATS / 2);
-          const startOfMiddlePattern = middleRepeat * patternWidth;
+          if (savedIndices && savedIndices[idx] != null) {
+            const oldLen = savedIndices.oldWordLen || lettersPerPattern;
+            const fullIndex = savedIndices[idx];
 
-          state.strip.scrollLeft = clampScrollLeft(state.strip, startOfMiddlePattern);
+            const repeat = Math.floor(fullIndex / oldLen);
+            const letterIndex = fullIndex % oldLen;
+            const newIndex = repeat * lettersPerPattern + (letterIndex % lettersPerPattern);
+
+            state.strip.scrollLeft = clampScrollLeft(state.strip, newIndex * sliceWidthVal);
+            return;
+          }
+
+          const middleRepeat = Math.floor(REPEATS / 2);
+          const start = middleRepeat * patternWidth;
+          state.strip.scrollLeft = clampScrollLeft(state.strip, start);
         });
       });
+    }
+
+    /* =========================
+       APP ACTIONS
+    ========================== */
+    function rebuild(persistScroll = false) {
+      isRebuilding = true;
+
+      let savedIndices = null;
+      if (persistScroll) {
+        const sw = getSliceWidth();
+        savedIndices = stripStates.map((s) => (sw ? Math.round(s.strip.scrollLeft / sw) : 0));
+        savedIndices.oldWordLen = currentWord.length;
+      }
+
+      updateLayoutVariables();
+      buildRows(currentWord, savedIndices);
+
+      requestAnimationFrame(() => requestAnimationFrame(() => (isRebuilding = false)));
     }
 
     function setWordFromInput() {
-      // MOBILE FIX: keyboard + focus veroorzaakt layout-jumps -> blur eerst
       input.blur();
 
-      const value = input.value.trim() || currentWord;
-      currentWord = value.toUpperCase();
+      const maxLimit = getMaxLetters();
+      let value = input.value.toUpperCase().replace(/[^A-Z0-9 ]/g, "");
+      if (value.length > maxLimit) value = value.substring(0, maxLimit);
+
+      if (value.length < 3) {
+        button.classList.add("button-error");
+        setTimeout(() => button.classList.remove("button-error"), 600);
+        return;
+      }
+
+      hasInteracted = true;
+      fullWord = value;
+      currentWord = fullWord;
       rebuild();
     }
 
-    function rebuild() {
-      isRebuilding = true;
-
-      updateLayoutVariables();
-      buildRows(currentWord);
-
-      // unlock na layout
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          isRebuilding = false;
-        });
-      });
-    }
-
+    /* =========================
+       INTERACTION: INFINITE LOOP
+    ========================== */
     function attachInfiniteScroll() {
-      stripStates.forEach(state => {
-        state.strip.addEventListener("scroll", () => {
-          if (isRebuilding) return;
+      stripStates.forEach((state) => {
+        state.strip.addEventListener(
+          "scroll",
+          () => {
+            if (isRebuilding) return;
 
-          const pw = state.patternWidth;
-          if (!pw) return;
+            const pw = state.patternWidth;
+            if (!pw) return;
 
-          const s = state.strip.scrollLeft;
-          const min = pw * 2;
-          const max = pw * (REPEATS - 2);
+            const s = state.strip.scrollLeft;
+            const min = pw * 2;
+            const max = pw * (REPEATS - 2);
 
-          if (s < min) {
-            state.strip.scrollLeft = clampScrollLeft(state.strip, s + pw * (REPEATS - 4));
-          } else if (s > max) {
-            state.strip.scrollLeft = clampScrollLeft(state.strip, s - pw * (REPEATS - 4));
-          }
-        }, { passive: true });
+            if (s < min) {
+              state.strip.scrollLeft = clampScrollLeft(state.strip, s + pw * (REPEATS - 4));
+            } else if (s > max) {
+              state.strip.scrollLeft = clampScrollLeft(state.strip, s - pw * (REPEATS - 4));
+            }
+          },
+          { passive: true }
+        );
       });
     }
 
+    /* =========================
+       INTERACTION: DRAG + SOFT SNAP
+    ========================== */
     function attachDragAndSoftSnap() {
-      strips.forEach(strip => {
+      strips.forEach((strip) => {
         let isDown = false;
         let startX = 0;
         let startScrollLeft = 0;
@@ -485,47 +622,41 @@
         let scrollTimeout = null;
 
         function cancelAnimation() {
-          if (animationId !== null) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-          }
+          if (animationId != null) cancelAnimationFrame(animationId);
+          animationId = null;
           isAnimating = false;
-          if (scrollTimeout !== null) {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = null;
-          }
+          if (scrollTimeout != null) clearTimeout(scrollTimeout);
+          scrollTimeout = null;
+        }
+
+        function easeInOutQuad(t) {
+          return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
         }
 
         function animateToNearest() {
           if (isRebuilding) return;
 
-          const sliceWidthVal = getSliceWidth();
+          const w = getSliceWidth();
           const current = strip.scrollLeft;
-          const index = Math.round(current / sliceWidthVal);
-          const target = index * sliceWidthVal;
+          const index = Math.round(current / w);
+          const target = index * w;
+
+          const distance = target - current;
+          if (Math.abs(distance) < 1) return;
 
           const start = performance.now();
           const duration = 350;
-          const from = current;
-          const distance = target - from;
-
-          if (Math.abs(distance) < 1) return;
 
           isAnimating = true;
 
-          function easeInOutQuad(t) {
-            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-          }
-
           function frame(now) {
-            if (isRebuilding) { cancelAnimation(); return; }
-            const t = Math.min((now - start) / duration, 1);
-            const eased = easeInOutQuad(t);
-            strip.scrollLeft = from + distance * eased;
+            if (isRebuilding) return cancelAnimation();
 
-            if (t < 1) {
-              animationId = requestAnimationFrame(frame);
-            } else {
+            const t = Math.min((now - start) / duration, 1);
+            strip.scrollLeft = current + distance * easeInOutQuad(t);
+
+            if (t < 1) animationId = requestAnimationFrame(frame);
+            else {
               animationId = null;
               isAnimating = false;
             }
@@ -536,9 +667,7 @@
 
         function scheduleSnap() {
           if (isAnimating || isRebuilding) return;
-          if (scrollTimeout !== null) {
-            clearTimeout(scrollTimeout);
-          }
+          if (scrollTimeout != null) clearTimeout(scrollTimeout);
           scrollTimeout = setTimeout(() => {
             if (!isDown) animateToNearest();
           }, 120);
@@ -556,8 +685,7 @@
 
         strip.addEventListener("pointermove", (e) => {
           if (!isDown) return;
-          const dx = e.clientX - startX;
-          strip.scrollLeft = startScrollLeft - dx;
+          strip.scrollLeft = startScrollLeft - (e.clientX - startX);
           e.preventDefault();
         });
 
@@ -574,43 +702,80 @@
         });
 
         strip.addEventListener("scroll", () => {
-          if (isAnimating || isRebuilding) return;
-          scheduleSnap();
-        }, { passive: true });
+          if (!isAnimating && !isRebuilding) scheduleSnap();
+        });
       });
     }
 
-    darkToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-    });
+    /* =========================
+       UI EVENTS
+    ========================== */
+    function attachUIEvents() {
+      darkToggle.addEventListener("click", () => document.body.classList.toggle("dark"));
 
-    input.addEventListener("input", () => {
-      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    });
+      fsToggle.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => { });
+        } else {
+          document.exitFullscreen();
+        }
+      });
 
-    button.addEventListener("click", setWordFromInput);
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") setWordFromInput();
-    });
+      function updateFullscreenUI() {
+        fsIcon.className = document.fullscreenElement ? "exit-fs-icon" : "fs-icon";
+        rebuild(true);
+      }
 
-    // Debounced resize -> voorkomt Safari UI jumps
-    let resizeT = null;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeT);
-      resizeT = setTimeout(() => rebuild(), 120);
-    }, { passive: true });
+      document.addEventListener("fullscreenchange", updateFullscreenUI);
+      document.addEventListener("webkitfullscreenchange", updateFullscreenUI);
 
+      input.addEventListener("input", () => {
+        const max = getMaxLetters();
+        let val = input.value.toUpperCase().replace(/[^A-Z0-9 ]/g, "");
+        if (val.length > max) val = val.substring(0, max);
+        input.value = val;
+        button.classList.remove("button-error");
+      });
+
+      button.addEventListener("click", setWordFromInput);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") setWordFromInput();
+      });
+    }
+
+    /* =========================
+       RESIZE HANDLING
+    ========================== */
+    function attachResizeHandling() {
+      let resizeT = null;
+      window.addEventListener(
+        "resize",
+        () => {
+          clearTimeout(resizeT);
+          resizeT = setTimeout(() => rebuild(true), 120);
+        },
+        { passive: true }
+      );
+    }
+
+    /* =========================
+       BOOTSTRAP
+    ========================== */
     async function init() {
       updateLayoutVariables();
+      input.value = "";
 
-      // MOBILE FIX: wacht tot font geladen is, anders font-swap glitch
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (e) { }
+      if (document.fonts?.ready) {
+        try {
+          await document.fonts.ready;
+        } catch { }
       }
 
       buildRows(currentWord);
       attachInfiniteScroll();
       attachDragAndSoftSnap();
+      attachUIEvents();
+      attachResizeHandling();
     }
 
     init();
